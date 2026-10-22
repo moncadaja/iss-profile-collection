@@ -75,21 +75,19 @@ def tabulate_hhmy_position_plan(stdout=sys.stdout):
 
         yield from optimize_beamline_plan(energy, extended_tuning=True, force_prepare=True, enable_fb_in_the_end=False)
         uid = db[-1].start['uid']
-        data_df = data_df.append({'energy' : energy,
+        data_df = pd.concat([data_df, pd.DataFrame([{'energy' : energy,
                                   'hhmy' : hhm.y.user_readback.get(),
                                   #'hhrmy' : hhrm.y.user_readback.get(),
-                                  'uid' : uid},
-                                   ignore_index=True)
+                                  'uid' : uid}])], ignore_index=True)
         # data_df.to_json('/nsls2/data/iss/legacy/xf08id/calibration/beamline_hhmy_tabulation_2022_05_19.json')
         data_df.to_json('/nsls2/data/iss/legacy/xf08id/calibration/beamline_hhmy_tabulation_2022_05_19_high_energies_2.json')
         # data_df.to_json('/nsls2/xf08id/Sandbox/Beamline_components/2022_05_19_beamline_tabulation/beamline_hhmy_tabulation_high_energies.json')
 
 def append_datapoint_plan(data_df):
     uid = db[-1].start['uid']
-    data_df = data_df.append({'energy': energy,
+    data_df = pd.concat([data_df, pd.DataFrame([{'energy': energy,
                               'hhmy': hhm.y.user_readback.get(),
-                              'uid': uid},
-                             ignore_index=True)
+                              'uid': uid}])], ignore_index=True)
     data_df.to_json(
         '/nsls2/data/iss/legacy/xf08id/calibration/beamline_hhmy_tabulation_2023_05_04.json')
 
@@ -166,15 +164,14 @@ class BeamlineConfig:
         hhm_fb_line = hhm.fb_line.value
 
 
-        self.data = self.data.append({'timestamp' : timestamp,
+        self.data = pd.concat([self.data, pd.DataFrame([{'timestamp' : timestamp,
                                       'energy' : energy,
                                       'hhm_pitch' : hhm_pitch,
                                       'hhm_y' : hhm_y,
                                       'hhrm_y' : hhrm_y,
                                       'hhm_angle_offset' : hhm_angle_offset,
                                       'hhm_fb_center' : hhm_fb_center,
-                                      'hhm_fb_line' : hhm_fb_line},
-                                      ignore_index=True)
+                                      'hhm_fb_line' : hhm_fb_line}])], ignore_index=True)
 
         self.data.to_json(self.filepath)
 

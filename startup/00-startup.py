@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 
-os.environ['QT_API'] = 'pyqt5'
+os.environ.setdefault('QT_API', 'pyqt6')
 
 from pathlib import Path
 from timeit import default_timer as timer
@@ -13,7 +13,6 @@ import bluesky
 import nslsii
 from bluesky.simulators import summarize_plan
 # Check version of bluesky and act accordingly
-from distutils.version import LooseVersion
 from datetime import datetime
 #from xview.spectra_db.db_io import get_spectrum_catalog, get_spectrum_catalog_new
 import json
@@ -174,6 +173,10 @@ runengine_metadata_dir = Path(f'{ROOT_PATH_SHARED}/metadata/') / Path("runengine
 from matplotlib.backends.backend_qt import _create_qApp
 
 _create_qApp()
+# Drive the Qt event loop from the IPython prompt. With a lazily-resolved matplotlib
+# backend nothing else guarantees this, and without it the XLive window never
+# processes events (everything looks disabled).
+get_ipython().enable_gui('qt')
 # qApp = matplotlib.backends.backend_qt.qApp
 
 # /nsls2/data/iss/shared/config/bluesky/profile_collection/startup/00-startup.py:130:

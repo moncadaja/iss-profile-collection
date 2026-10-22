@@ -1,5 +1,5 @@
 print(ttime.ctime() + ' >>>> ' + __file__)
-# from PyQt5.QtWidgets import QApplication
+# from qtpy.QtWidgets import QApplication
 import atexit
 import requests
 import os
@@ -66,7 +66,7 @@ if not os.environ.get('AZURE_TESTING'):
     xlive()
 
     print_to_gui(f'Startup complete at {ttime.ctime()}')
-    #sys.exit(app.exec_())
+    #sys.exit(app.exec())
 
     sys.stdout = xlive_gui.emitstream_out
     sys.stderr = xlive_gui.emitstream_err
