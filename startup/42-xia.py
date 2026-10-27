@@ -1075,13 +1075,19 @@ class ISSXIAXMAPDetectorStream(ISSXIAXMAPDetector):
         return md
 
 
-ge_detector = ISSXIAXMAPDetector("XF:08IDB-ES{GE-Det:1}", name="ge_detector")
-ge_detector.scas.kind = Kind.hinted
-# ge_detector.preamps.kind = Kind.hinted
-ge_detector._channels.kind = Kind.hinted
-# ttime.sleep(2)
-ge_detector_stream = ISSXIAXMAPDetectorStream(
-    "XF:08IDB-ES{GE-Det:1}",
-    name="ge_detector_stream",
-    ext_trigger_device=apb_trigger_ge_detector,
-)
+# the constructor runs warmup(), which talks to the IOC; an absent IOC must not abort the profile
+try:
+    ge_detector = ISSXIAXMAPDetector("XF:08IDB-ES{GE-Det:1}", name="ge_detector")
+    ge_detector.scas.kind = Kind.hinted
+    # ge_detector.preamps.kind = Kind.hinted
+    ge_detector._channels.kind = Kind.hinted
+    # ttime.sleep(2)
+    ge_detector_stream = ISSXIAXMAPDetectorStream(
+        "XF:08IDB-ES{GE-Det:1}",
+        name="ge_detector_stream",
+        ext_trigger_device=apb_trigger_ge_detector,
+    )
+except Exception as e:
+    print(f"WARNING: Ge detector (XF:08IDB-ES{{GE-Det:1}}) is not available and will be disabled: {type(e).__name__}: {e}")
+    ge_detector = None
+    ge_detector_stream = None

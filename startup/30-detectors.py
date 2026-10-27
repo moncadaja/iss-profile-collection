@@ -97,9 +97,10 @@ class EncoderFS(Encoder):
         # we are writing the file to a temp directory in the ioc and
         # then moving it to the GPFS system.
         #
-        ioc_file_root = '/home/softioc/tmp/'
+        ioc_file_root = '/home/softioc/tmp/' ###########
         # ioc_file_root = '/nsls2/data/iss/proposals/2026-1/pass-319773/assets/encpb/2026/02/03'
-        self._ioc_full_path = os.path.join(ioc_file_root, filename)
+        self._ioc_full_path = os.path.join(ioc_file_root, filename) #####################
+        # self._ioc_full_path = f'{ROOT_PATH}/raw/encpb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{filename}'
         self._filename = filename
 
         #self.filepath.put(self._full_path)   # commented out during disaster
@@ -131,13 +132,15 @@ class EncoderFS(Encoder):
         print_to_gui(f'{ttime.ctime()} >>> {self.name} complete starting...')
         self.ignore_sel.set(1).wait()
 
-        # print(f'     !!!!! {datetime.now()} complete in {self.name} after stop writing')
+        print(f'     !!!!! {datetime.now()} complete in {self.name} after stop writing')
 
         #while not os.path.isfile(self._full_path):
         #    ttime.sleep(.1)
 
         # FIXME: beam line disaster fix.
         # Let's move the file to the correct place
+        
+        
         workstation_file_root = '/mnt/xf08ida-ioc1/'
         workstation_full_path = os.path.join(workstation_file_root, self._filename)
         # print('Moving file from {} to {}'.format(workstation_full_path, self._full_path))
@@ -148,6 +151,9 @@ class EncoderFS(Encoder):
         # print(f"{self._filename = }")
         cp_stat = shutil.copy(workstation_full_path, self._full_path)
         print_to_gui(f'Copy done')
+        
+        
+        
         # HACK: Make datum documents here so that they are available for collect_asset_docs
         # before collect() is called. May need changes to RE to do this properly. - Dan A.
 

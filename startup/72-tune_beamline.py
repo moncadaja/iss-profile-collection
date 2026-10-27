@@ -285,13 +285,13 @@ def quick_tune_beamline_plan_bundle(enable_fb_in_the_end : bool = True, plan_gui
 #         yield from bps.mv(hhm.energy, energy)
 
 
-def optimize_beamline_plan_bundle(energy: int = -1, extended_tuning: bool = False, force_prepare = False, enable_fb_in_the_end=True, do_liveplot=False):
+def optimize_beamline_plan_bundle(energy: int = -1, extended_tuning: bool = False, force_prepare = False, enable_fb_in_the_end=True, do_liveplot=False, ic_absorption=None):
     old_energy = hhm.energy.position
     plans = []
     if force_prepare or ((np.abs((energy-old_energy)/old_energy)> 0.1) or (np.sign(old_energy-13000)) != (np.sign(energy-13000))):
         plans.append({'plan_name' : 'shutter_close_plan', 'plan_kwargs' : {}})
         plans.append({'plan_name' : 'prepare_beamline_plan',
-                      'plan_kwargs' : {'energy': energy, 'move_cm_mirror': True}})
+                      'plan_kwargs' : {'energy': energy, 'move_cm_mirror': True, 'ic_absorption': ic_absorption}})
         tuning_plans = tune_beamline_plan_bundle(extended_tuning=extended_tuning, enable_fb_in_the_end=enable_fb_in_the_end, do_liveplot=do_liveplot)
         plans.extend(tuning_plans)
 

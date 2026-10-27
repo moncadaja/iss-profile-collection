@@ -105,6 +105,8 @@ detector_dictionary =   {
                     'EM I2 V monitor' : {'device' : em_ave, 'channels' : ['em_ave_ch7_mean']},
                     'EM Fluo V monitor' : {'device' : em_ave, 'channels' : ['em_ave_ch8_mean']},
                 }
+if ge_detector is None:
+    del detector_dictionary['Ge detector']
 # comment
 def get_detector_device_list(key_list, flying=True):
     dets = []

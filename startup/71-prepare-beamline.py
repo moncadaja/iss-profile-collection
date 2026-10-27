@@ -3,6 +3,7 @@ print(ttime.ctime() + ' >>>> ' + __file__)
 import sys
 import numpy as np
 from xas.xray import energy2angle
+from xas.ion_chamber import gas_fractions_for_absorption, gas_absorption, mfc_setpoints, mfc_trickle_setpoints
 from scipy import interpolate
 
 
@@ -229,7 +230,8 @@ bl_prepare_energy_ranges = [
         },
     ]
 
-def prepare_beamline_plan(energy: int = -1, move_cm_mirror = False, move_hhm_y=True):
+def prepare_beamline_plan(energy: float = -1, move_cm_mirror = False, move_hhm_y=True, ic_absorption=None):
+    # ic_absorption: requested photoabsorption per ion chamber in percent; None keeps the table flows
     energy_ranges = bl_prepare_energy_ranges
 
     BPM_exposure_setter = bpm_es.exp_time
@@ -244,15 +246,32 @@ def prepare_beamline_plan(energy: int = -1, move_cm_mirror = False, move_hhm_y=T
     hhm_roll_setter = hhm.roll
     settling_time = 180
 
-    if type(energy) == str:
-        energy = int(energy)
+    energy = float(energy)
 
-    energy_range = [e_range for e_range in energy_ranges if
-                  e_range['energy_end'] > energy >= e_range['energy_start']][0]
-    if not energy_range:
-        # print_to_gui('ERROR: Energy is outside of the beamline energy range')
-        print('ERROR: Energy is outside of the beamline energy range')
+    matching_ranges = [e_range for e_range in energy_ranges if
+                       e_range['energy_start'] <= energy <= e_range['energy_end']]
+    if not matching_ranges:
+        print_to_gui(f'[Prepare Beamline] ERROR: {energy:.0f} eV is outside of the beamline energy range')
         return
+    energy_range = matching_ranges[0]
+
+    if ic_absorption is None:
+        purge_flows = {'He': energy_range['He_flow'], 'N2': energy_range['N2_flow']}
+        trickle_flows = {gas: flow / 10 for gas, flow in purge_flows.items()}
+    else:
+        fractions, clamped = gas_fractions_for_absorption(energy, ic_absorption / 100)
+        purge_flows = mfc_setpoints(fractions)
+        trickle_flows = mfc_trickle_setpoints(purge_flows)
+        mix_str = ' / '.join(f'{gas} {frac * 100:.0f} %' for gas, frac in fractions.items() if frac > 0)
+        if clamped:
+            achievable = gas_absorption(fractions, energy) * 100
+            print_to_gui(f'[Prepare Beamline] {ic_absorption:.1f} % IC absorption is not reachable with '
+                         f'{"/".join(fractions)} at {energy:.0f} eV; using {mix_str} ({achievable:.1f} % absorption)')
+        else:
+            print_to_gui(f'[Prepare Beamline] IC gas for {ic_absorption:.1f} % absorption at {energy:.0f} eV: {mix_str}')
+        print_to_gui(f'[Prepare Beamline] MFC setpoints: purge He {purge_flows["He"]:.2f} V / N2 {purge_flows["N2"]:.2f} V, '
+                     f'trickle He {trickle_flows["He"]:.2f} V / N2 {trickle_flows["N2"]:.2f} V '
+                     f'(IC gains come from the energy table; run optimize gains if the I0 signal is low)')
 
 
     current_filterbox_position = filterbox.y.read()[filterbox.y.name]['value']
@@ -296,10 +315,9 @@ def prepare_beamline_plan(energy: int = -1, move_cm_mirror = False, move_hhm_y=T
 
     start_time = ttime.time()
     print_to_gui('[Prepare Beamline] Setting ion chamber gas composition...')
-    yield from bps.mv(
-                        He_flow_setter, energy_range['He_flow'],
-                        N2_flow_setter, energy_range['N2_flow'],
-                      )
+    yield from bps.mv(He_flow_setter, purge_flows['He'],
+                      N2_flow_setter, purge_flows['N2'],
+                      timeout=60)
     print_to_gui('[Prepare Beamline] Ion chamber gas composition set')
 
 
@@ -391,10 +409,9 @@ def prepare_beamline_plan(energy: int = -1, move_cm_mirror = False, move_hhm_y=T
     yield from ir_amp.set_gain_plan(energy_range['ir_gain'], True)
     # Additon to account for higher flows
 
-    yield from bps.mv(
-                        He_flow_setter, energy_range['He_flow']/10,
-                        N2_flow_setter, energy_range['N2_flow']/10,
-                      )
+    yield from bps.mv(He_flow_setter, trickle_flows['He'],
+                      N2_flow_setter, trickle_flows['N2'],
+                      timeout=60)
 
     print_to_gui('[Prepare Beamline] Ion chamber gas composition set')
 
