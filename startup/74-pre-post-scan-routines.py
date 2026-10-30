@@ -320,7 +320,10 @@ def set_attenuator(thickness:int  = 0, **kwargs):
 
 
 
-def scan_beam_center(camera=camera_sp1, emin=10000, emax=20000, nsteps=10, roll_range=5, roll_nsteps=6):
+def scan_beam_center(camera=None, emin=10000, emax=20000, nsteps=10, roll_range=5, roll_nsteps=6):
+    # Default to camera_sp1 if not specified (queue-server compatible)
+    if camera is None:
+        camera = camera_sp1
 
     original_roll = hhm.roll.position
     hhm_rolls = np.linspace(original_roll-roll_range/2, original_roll+roll_range/2, roll_nsteps+1)

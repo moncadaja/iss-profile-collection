@@ -17,7 +17,11 @@ import time as ttime
 processing_ioc_uid = None
 
 
-if not os.environ.get('AZURE_TESTING'):
+# Detect if running in queue-server worker (no GUI needed)
+# Queue-server provides a dummy IPython without full GUI support
+_in_queueserver = not hasattr(get_ipython(), 'enable_gui')
+
+if not os.environ.get('AZURE_TESTING') and not _in_queueserver:
     from isstools import xlive
 
     xlive_gui = xlive.XliveGui(data_collection_plan_funcs=data_collection_plan_funcs,
@@ -71,6 +75,9 @@ if not os.environ.get('AZURE_TESTING'):
 
     sys.stdout = xlive_gui.emitstream_out
     sys.stderr = xlive_gui.emitstream_err
+else:
+    # Running in queue-server or test mode - no GUI
+    print(f'Startup complete at {ttime.ctime()} (no GUI mode)')
 
 
     # def cleaning():

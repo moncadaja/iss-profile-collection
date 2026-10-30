@@ -17,7 +17,11 @@ def move_rel_sample_stage_plan(sample_coordinates : dict = {}):
 
 
 from xas.image_analysis import find_points_moving_with_stage
-def calibrate_sample_cameras_plan(cameras=[camera_sp1, camera_sp2], dx=5, dy=5, target_max_counts=200, npoly=1):
+def calibrate_sample_cameras_plan(cameras=None, dx=5, dy=5, target_max_counts=200, npoly=1):
+    # Default cameras for queue-server compatibility
+    if cameras is None:
+        cameras = [camera_sp1, camera_sp2]
+
     dxs = [+dx/2, -dx/2, -dx/2, +dx/2]
     dys = [-dy/2, -dy/2, +dy/2, +dy/2]
     x0 = sample_stage.x.position

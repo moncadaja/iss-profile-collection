@@ -63,7 +63,7 @@ def optimize_beamline_plan(energy: int = -1, extended_tuning: bool = False, forc
         # print_to_gui(f'Beamline is already prepared for {energy} eV', stdout=stdout)
         yield from bps.mv(hhm.energy, energy)
 
-def tabulate_hhmy_position_plan(stdout=sys.stdout):
+def tabulate_hhmy_position_plan():
     # _energies = [13000, 15000, 17500, 20000, 22500, 25000, 27500, 30000]  # np.arange(5000, 11000, 1000)
     # _energies = [4900, 5100, 5500, 6000, 7000, 8000, 9000, 10000, 11000, 12000]  # np.arange(5000, 11000, 1000)
     _energies = [25000, 27500, 30000]  # np.arange(5000, 11000, 1000)

@@ -176,7 +176,10 @@ _create_qApp()
 # Drive the Qt event loop from the IPython prompt. With a lazily-resolved matplotlib
 # backend nothing else guarantees this, and without it the XLive window never
 # processes events (everything looks disabled).
-get_ipython().enable_gui('qt')
+# Only enable GUI if running in real IPython (not queue-server worker)
+ip = get_ipython()
+if hasattr(ip, 'enable_gui'):
+    ip.enable_gui('qt')
 # qApp = matplotlib.backends.backend_qt.qApp
 
 # /nsls2/data/iss/shared/config/bluesky/profile_collection/startup/00-startup.py:130:
